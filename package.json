@@ -2,7 +2,7 @@
   "name": "mimosa-combine",
   "preferGlobal": "false",
   "version": "0.1.0",
-  "homepage": "http://www.mimosajs.com",
+  "homepage": "https://github.com/dbashford/mimosa-combine",
   "author": "David Bashford",
   "description": "A Mimosa folder combining module",
   "contributors": [
@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "YOUR REPO URL"
+    "url": "https://github.com/dbashford/mimosa-combine"
   },
   "keywords": [
     "mimosa",
