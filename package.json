@@ -1,0 +1,33 @@
+{
+  "name": "mimosa-combine",
+  "preferGlobal": "false",
+  "version": "0.1.0",
+  "homepage": "http://www.mimosajs.com",
+  "author": "David Bashford",
+  "description": "A Mimosa folder combining module",
+  "contributors": [
+    {
+      "name": "David Bashford",
+      "email": "dbashford@hotmail.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "YOUR REPO URL"
+  },
+  "keywords": [
+    "mimosa",
+    "mmodule",
+    "merge",
+    "combine"
+  ],
+  "dependencies": {
+    "logmimosa": "0.2.1",
+    "wrench": "1.4.2",
+    "lodash": "0.9.2"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.8"
+  }
+}
