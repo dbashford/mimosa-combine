@@ -15,9 +15,10 @@ registration = (mimosaConfig, register) ->
 _checkForMerge = (mimosaConfig, options, next) ->
   for file in options.files
     fileName = file.outputFileName
-    for combine in mimosaConfig.combine
-      if fileName.indexOf(combine) is 0
-        __mergeDirectory(combine)
+    if fileName?
+      for combine in mimosaConfig.combine
+        if fileName.indexOf(combine.folder) is 0
+          __mergeDirectory(combine)
   next()
 
 _mergeAll = (mimosaConfig, options, next) ->
