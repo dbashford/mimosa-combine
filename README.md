@@ -19,6 +19,8 @@ During the 'init' phase of the 'buildDone' workflow, all of the configured combi
 
 During the 'afterWrite' phase of the 'add', 'update', and 'remove' workflows, if any combine folders contain the changed file, those combines will be run.
 
+By default, binary files, like images, are excluded from merging and this cannot be changed.  Other exclusions can be added via the config, as can an order to the files get added.
+
 ## Default Config
 
 ```

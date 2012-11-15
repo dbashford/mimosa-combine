@@ -43,14 +43,12 @@ __mergeDirectory = (combine) ->
     folderFiles = _.difference(folderFiles, combine.order)
     combine.order.forEach (orderFile) ->
       if fs.existsSync orderFile
-        logger.debug "Adding [[ #{orderFile} ]] to [[ #{combine.output} ]] in appropriate order"
-        outputFileText += fs.readFileSync(orderFile) + "\n"
+        outputFileText += __addFileToText(orderFile)
       else
         logger.warn "File listed in combine.order [[ #{orderFile} ]] does not exist"
 
   folderFiles.forEach (folderFile) ->
-    logger.debug "Adding [[ #{folderFile} ]] to [[ #{combine.output} ]]"
-    outputFileText += fs.readFileSync(folderFile) + "\n"
+    outputFileText += __addFileToText(folderFile)
 
   unless fs.existsSync path.dirname(combine.output)
     logger.debug "Directory does not exist for combine file [[ #{combine.output} ]], so making it."
@@ -58,6 +56,30 @@ __mergeDirectory = (combine) ->
 
   logger.success "Writing combined file [[ #{combine.output} ]]"
   fs.writeFileSync combine.output, outputFileText
+
+__addFileToText = (fileName, text) ->
+  fileText = fs.readFileSync(fileName)
+  if __getEncoding(fileText) isnt 'binary'
+    logger.debug "Adding [[ #{fileName} ]] to output"
+    fileText + "\n"
+  else
+    logger.debug "NOT adding [[ #{fileName} ]] to output"
+    ""
+
+__getEncoding = (buffer) ->
+  contentStartBinary = buffer.toString('binary',0,24)
+  contentStartUTF8 = buffer.toString('utf8',0,24)
+  encoding = 'utf8'
+
+  for i in [0...contentStartUTF8.length]
+    charCode = contentStartUTF8.charCodeAt(i)
+    if charCode is 65533 or charCode <= 8
+      # 8 and below are control characters (e.g. backspace, null, eof, etc.)
+      # 65533 is the unknown character
+      encoding = 'binary'
+      break
+
+  encoding
 
 module.exports =
   registration: registration
