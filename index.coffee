@@ -18,12 +18,17 @@ _checkForMerge = (mimosaConfig, options, next) ->
     if fileName?
       for combine in mimosaConfig.combine
         if fileName.indexOf(combine.folder) is 0
-          __mergeDirectory(combine)
+          doit = true
+          if combine.exclude? and combine.exclude.indexOf(fileName) isnt -1
+            doit = false
+          if combine.excludeRegex? and fileName.match(combine.excludeRegex)
+            doit = false
+          __mergeDirectory combine if doit
   next()
 
 _mergeAll = (mimosaConfig, options, next) ->
   for combine in mimosaConfig.combine
-    __mergeDirectory(combine)
+    __mergeDirectory combine
   next()
 
 __mergeDirectory = (combine) ->
@@ -36,6 +41,8 @@ __mergeDirectory = (combine) ->
   folderFiles = wrench.readdirSyncRecursive(combine.folder).map (f) -> path.join combine.folder, f
   folderFiles = folderFiles.filter (f) -> fs.statSync(f).isFile()
   folderFiles = _.difference(folderFiles, combine.exclude)
+  if combine.excludeRegex
+    folderFiles = folderFiles.filter (f) -> not f.match(combine.excludeRegex)
 
   outputFileText = ""
 

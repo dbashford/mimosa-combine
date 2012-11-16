@@ -24,18 +24,41 @@ By default, binary files, like images, are excluded from merging and this cannot
 ## Default Config
 
 ```
-combine:[
+combine:[]
+```
+
+## Example Config
+
+If this module had a default config placeholder like other Mimosa modules, it would look something like this:
+
+```
+combine: [                           # An array of folder combination details
   {
-    folder:"stylesheets/vendor"
-    output:"stylesheets/vendor.css"
-    exclude:null
-    order:null
+    folder:"stylesheets/vendor"      # The folder to combine into a single file. Path can
+                                       # be relative to the watch config setting, or absolute.
+    output:"stylesheets/vendor.css"  # The output file for the folder combination. Path can
+                                       # be relative to the watch config setting, or absolute.
+    exclude:null                     # An array of regexs or strings that match files to
+                                       # exclude from matching. Can be a mix of regex and
+                                       # strings. Strings should be a path relative to the
+                                       # folder or absolute.
+                                       # ex: [/\.txt$/, "vendor/jqueryui.js"], which would keep
+                                       # all .txt files and jqueryui.js out of your combined
+                                       # file.
+    order:null                       # An array of paths to the files to place at the start
+                                       # of the merged file.  You do not need to name every
+                                       # file, just those whose order is important. Paths
+                                       # can be relative to the 'folder' directory or absolute.
+                                       # Paths should point at the compiled file. So foo.css,
+                                       # not foo.less. Can be left off or made null if not
+                                       # needed.
   }
 ]
+
 ```
 
 * `combine`: an array of combine configurations
-* `folder`: a string, the path to the folder to combine. Path is relative to the watch config settings.
-* `output`: a string, the path to the output file result of the combine.  Path is relative to the watch config settings.
-* `exclude`: an array of strings, the list of files to exclude from the combine.  Paths should be relative to the watch.compiledDir and should point at the compiled file.  So foo.css, not foo.less. Can be left off or made null if not needed.
-* `order`: an array of strings, the list of files to include in the combined file first. Does not need to be all the files, just the files for which order is important.  Paths should be relative to the watch.compiledDir and should point at the compiled file.  So foo.css, not foo.less. Can be left off or made null if not needed.
+* `folder`: a string, the path to the folder to combine. Path is relative to the watch config settings.  Path can also be absolute.
+* `output`: a string, the path to the output file result of the combine.  Path is relative to the watch config settings.  Path can also be absolute.
+* `exclude`: an array of strings and/or regexs, the list of files and file patterns to exclude from the combine.Paths should be relative to `folder` and should point at the compiled file. So foo.css, not foo.less. Regexes can also be used at the same time.  ex: `ex: [/\.txt$/, "vendor/jqueryui.js"]`. Can be left off or made null if not needed.
+* `order`: an array of strings, the list of files to include in the combined file first. Does not need to be all the files, just the files for which order is important. Paths should be relative to `folder` and should point at the compiled file. So foo.css, not foo.less. Can be left off or made null if not needed.
