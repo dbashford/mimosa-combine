@@ -15,11 +15,13 @@ Add `'combine'` to your list of modules.  That's all!  Mimosa will install the m
 
 The `'combine'` module configuration is an array of objects that configure what folders' content to merge, in what order, and where to write the output.
 
-During the 'init' phase of the 'buildDone' workflow, all of the configured combines will be run, and all output files will be created.
+During the 'init' phase of the 'postBuild' workflow, all of the configured combines will be run, and all output files will be created.
 
 During the 'afterWrite' phase of the 'add', 'update', and 'remove' workflows, if any combine folders contain the changed file, those combines will be run.
 
 By default, binary files, like images, are excluded from merging and this cannot be changed.  Other exclusions can be added via the config, as can an order to the files get added.
+
+When `mimosa clean` or `mimosa watch` with the `--clean` flag is run, the `combine` module will clean up the files it has written.
 
 ## Default Config
 

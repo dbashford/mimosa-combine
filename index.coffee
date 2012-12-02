@@ -9,8 +9,16 @@ logger = require 'logmimosa'
 config = require './config'
 
 registration = (mimosaConfig, register) ->
+  register ['preClean'], 'init', _cleanCombined
   register ['add','update','remove'], 'afterWrite', _checkForMerge
-  register ['buildDone'], 'init', _mergeAll
+  register ['postBuild'], 'init', _mergeAll
+
+_cleanCombined = (mimosaConfig, options, next) ->
+  for combine in mimosaConfig.combine
+    if fs.existsSync(combine.output)
+      fs.unlinkSync(combine.output)
+      logger.info "mimosa-combine: Deleted file [[ #{combine.output} ]]"
+  next()
 
 _checkForMerge = (mimosaConfig, options, next) ->
   for file in options.files
