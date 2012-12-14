@@ -76,7 +76,10 @@ __addFileToText = (fileName, text) ->
   fileText = fs.readFileSync(fileName)
   if __getEncoding(fileText) isnt 'binary'
     logger.debug "Adding [[ #{fileName} ]] to output"
-    fileText + "\n"
+    if path.extname(fileName) is ".js"
+      fileText + ";\n"
+    else
+      fileText + "\n"
   else
     logger.debug "NOT adding [[ #{fileName} ]] to output"
     ""
