@@ -77,7 +77,7 @@ __addFileToText = (fileName, text) ->
   if __getEncoding(fileText) isnt 'binary'
     logger.debug "Adding [[ #{fileName} ]] to output"
     if path.extname(fileName) is ".js"
-      fileText + ";\n"
+      fileText + ";"
     else
       fileText + "\n"
   else
