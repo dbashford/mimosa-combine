@@ -40,6 +40,9 @@ _mergeAll = (mimosaConfig, options, next) ->
   next()
 
 __mergeDirectory = (combine) ->
+  unless fs.existsSync combine.folder
+    return logger.warn "mimosa-combine: combine folder [[ #{combine.folder} ]] does not exist"
+
   logger.debug "Combining [[ #{combine.folder} ]]"
 
   if fs.existsSync combine.output

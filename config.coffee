@@ -27,11 +27,7 @@ exports.validate = (config) ->
 
           if combine.folder?
             if typeof combine.folder is "string"
-              folderPath = __determinePath combine.folder, config.watch.sourceDir
-              if fs.existsSync folderPath
-                combine.folder = __determinePath combine.folder, config.watch.compiledDir
-              else
-                errors.push "combine.folder entry [[ #{combine.folder} ]] must resolve to a real path, resolves to [[ #{folderPath} ]]"
+              combine.folder = __determinePath combine.folder, config.watch.compiledDir
             else
               errors.push "combine.folder must be a string"
           else
