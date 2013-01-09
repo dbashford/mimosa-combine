@@ -1,10 +1,5 @@
 "use strict"
 
-fs = require 'fs'
-path = require 'path'
-
-windowsDrive = /^[A-Za-z]:\\/
-
 exports.defaults = ->
   combine:[]
 
@@ -17,77 +12,27 @@ exports.placeholder = ->
                        # entries in the combine array
   """
 
-exports.validate = (config) ->
+exports.validate = (config, validators) ->
   errors = []
-  if config.combine?
-    if Array.isArray(config.combine)
-      for combine in config.combine
-        if typeof combine is "object" and not Array.isArray(combine)
+  if validators.ifExistsIsArray(errors, "combine", config.combine)
+    for combine in config.combine
+      if typeof combine is "object" and not Array.isArray(combine)
 
-
-          if combine.folder?
-            if typeof combine.folder is "string"
-              combine.folder = __determinePath combine.folder, config.watch.compiledDir
-            else
-              errors.push "combine.folder must be a string"
-          else
-            errors.push "combine entries must have folder property."
-
-
-          if combine.output?
-            if typeof combine.output is "string"
-              combine.output = __determinePath combine.output, config.watch.compiledDir
-            else
-              errors.push "combine.output must be a string"
-          else
-            errors.push "combine entries must have output property."
-
-
-          continue if errors.length > 0
-
-
-          if combine.order?
-            if Array.isArray(combine.order)
-              newOrder = []
-              folderPath = __determinePath combine.folder, config.watch.sourceDir
-              for order in combine.order
-                if typeof order is "string"
-                  newOrder.push __determinePath order, combine.folder
-                else
-                  errors.push "combine.order must be an array of strings."
-                  break
-              combine.order = newOrder
-            else
-              errors.push "combine.order must be an array."
-
-
-          if combine.exclude?
-            if Array.isArray(combine.exclude)
-              regexes = []
-              newExclude = []
-              for exclude in combine.exclude
-                if typeof exclude is "string"
-                  newExclude.push __determinePath exclude, combine.folder
-                else if exclude instanceof RegExp
-                  regexes.push exclude.source
-                else
-                  errors.push "combine.exclude must be an array of strings and/or regexes."
-                  break
-
-              if regexes.length > 0
-                combine.excludeRegex = new RegExp regexes.join("|"), "i"
-
-              combine.exclude = newExclude
-            else
-              errors.push "combine.exclude must be an array"
+        if combine.folder?
+          combine.folder = validators.multiPathNeedNotExist(errors, "combine.folder", combine.folder, config.watch.compiledDir)
         else
-          errors.push "combine must be an array of objects."
-    else
-      errors.push "combine configuration must be an array."
+          errors.push "combine entries must have folder property."
+
+        if combine.output?
+          combine.output = validators.multiPathNeedNotExist(errors, "combine.output", combine.output, config.watch.compiledDir)
+        else
+          errors.push "combine entries must have output property."
+
+        continue if errors.length > 0
+
+        validators.ifExistsArrayOfMultiPaths(errors, "combine.order", combine.order, combine.folder)
+        validators.ifExistsFileExcludeWithRegexAndString(errors, "combine.exclude", combine, combine.folder)
+      else
+        errors.push "combine must be an array of objects."
 
   errors
-
-__determinePath = (thePath, relativeTo) ->
-  return thePath if windowsDrive.test thePath
-  return thePath if thePath.indexOf("/") is 0
-  path.join relativeTo, thePath
