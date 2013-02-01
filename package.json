@@ -1,6 +1,6 @@
 {
   "name": "mimosa-combine",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "homepage": "https://github.com/dbashford/mimosa-combine",
   "author": "David Bashford",
   "description": "A Mimosa folder combining module",
@@ -21,7 +21,7 @@
     "combine"
   ],
   "dependencies": {
-    "logmimosa": "0.3.1",
+    "logmimosa": "0.4.0",
     "wrench": "1.4.4",
     "lodash": "1.0.0-rc.3"
   },
