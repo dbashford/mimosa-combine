@@ -36,14 +36,17 @@ exports.validate = (config, validators) ->
     """
 
     combines = config.combine
-    config.combine = exports.defaults()
+    config.combine = {}
+    defaults = exports.defaults()
+    for key of defaults.combine
+      config.combine[key] = defaults.combine[key]
     config.combine.folders = combines
     config.combine.removeCombined.enabled = false
     errorStart = "combine"
 
-  combines = config.combine.folders
-
   if validators.ifExistsIsObject(errors, "combine", config.combine)
+    combines = config.combine.folders
+
     if validators.ifExistsIsArray(errors, errorStart, combines)
       for combine in combines
         if typeof combine is "object" and not Array.isArray(combine)

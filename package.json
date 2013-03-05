@@ -1,6 +1,6 @@
 {
   "name": "mimosa-combine",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "homepage": "https://github.com/dbashford/mimosa-combine",
   "author": "David Bashford",
   "description": "A Mimosa folder combining module",
