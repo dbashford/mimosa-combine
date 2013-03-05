@@ -14,9 +14,9 @@ registration = (mimosaConfig, register) ->
   register ['postBuild'], 'init', _mergeAll
 
 _cleanCombined = (mimosaConfig, options, next) ->
-  for combine in mimosaConfig.combine
+  for combine in mimosaConfig.combine.folders
     if fs.existsSync(combine.output)
-      fs.unlinkSync(combine.output)
+      fs.unlinkSync combine.output
       logger.info "mimosa-combine: Deleted file [[ #{combine.output} ]]"
   next()
 
@@ -24,7 +24,7 @@ _checkForMerge = (mimosaConfig, options, next) ->
   for file in options.files
     fileName = file.outputFileName
     if fileName?
-      for combine in mimosaConfig.combine
+      for combine in mimosaConfig.combine.folders
         if fileName.indexOf(combine.folder) is 0
           doit = true
           if combine.exclude? and combine.exclude.indexOf(fileName) isnt -1
@@ -35,8 +35,15 @@ _checkForMerge = (mimosaConfig, options, next) ->
   next()
 
 _mergeAll = (mimosaConfig, options, next) ->
-  for combine in mimosaConfig.combine
-    __mergeDirectory combine
+  combinedFiles = []
+  for combine in mimosaConfig.combine.folders
+    files = __mergeDirectory combine
+    combinedFiles.push files...
+
+  if mimosaConfig.isBuild and mimosaConfig.combine.removeCombined.enabled
+    __removeAllCombined combinedFiles, mimosaConfig.combine.removeCombined
+    __cleanUpDirectories mimosaConfig.combine.folders
+
   next()
 
 __mergeDirectory = (combine) ->
@@ -72,8 +79,44 @@ __mergeDirectory = (combine) ->
     logger.debug "Directory does not exist for combine file [[ #{combine.output} ]], so making it."
     wrench.mkdirSyncRecursive path.dirname(combine.output), 0o0777
 
-  logger.success "Writing combined file [[ #{combine.output} ]]"
+  logger.success "Wrote combined file [[ #{combine.output} ]]"
   fs.writeFileSync combine.output, outputFileText
+
+  folderFiles
+
+__removeAllCombined = (files, removeCombined) ->
+
+  for file in files
+    doit = true
+    if removeCombined?.exclude? and removeCombined.exclude.indexOf(file) isnt -1
+      doit = false
+    if removeCombined?.excludeRegex? and file.match(removeCombined?.excludeRegex)
+      doit = false
+
+    if doit
+      fs.unlinkSync file
+      logger.success "Removed combined file constituent [[ #{file} ]]"
+
+__cleanUpDirectories = (folders) ->
+
+  for folderConfig in folders
+    directories = wrench.readdirSyncRecursive(folderConfig.folder)
+      .map (f) ->
+        path.join folderConfig.folder, f
+      .filter (f) ->
+        fs.statSync(f).isDirectory()
+
+    directories.push folderConfig.folder
+
+    _.sortBy(directories, 'length').reverse().forEach (dir) ->
+      if fs.existsSync dir
+        try
+          fs.rmdirSync dir
+          logger.success "Deleted empty directory [[ #{dir} ]]"
+        catch err
+          unless err.code is "ENOTEMPTY"
+            logger.error "Unable to delete directory, [[ #{dirPath} ]]"
+            logger.error err
 
 __addFileToText = (fileName, text) ->
   fileText = fs.readFileSync(fileName)
