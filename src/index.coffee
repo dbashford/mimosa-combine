@@ -2,6 +2,7 @@
 
 fs = require "fs"
 path = require "path"
+
 wrench = require 'wrench'
 _ = require 'lodash'
 logger = require 'logmimosa'
@@ -9,9 +10,9 @@ logger = require 'logmimosa'
 config = require './config'
 
 registration = (mimosaConfig, register) ->
-  register ['preClean'], 'init', _cleanCombined
+  register ['preClean'],              'init',       _cleanCombined
   register ['add','update','remove'], 'afterWrite', _checkForMerge
-  register ['postBuild'], 'init', _mergeAll
+  register ['postBuild'],             'init',       _mergeAll
 
 _cleanCombined = (mimosaConfig, options, next) ->
   for combine in mimosaConfig.combine.folders
@@ -99,27 +100,28 @@ __removeAllCombined = (files, removeCombined) ->
 
 __cleanUpDirectories = (folders) ->
 
-  for folderConfig in folders
-    directories = wrench.readdirSyncRecursive(folderConfig.folder)
-      .map (f) ->
-        path.join folderConfig.folder, f
-      .filter (f) ->
-        fs.statSync(f).isDirectory()
-
-    directories.push folderConfig.folder
-
-    _.sortBy(directories, 'length').reverse().forEach (dir) ->
+  toFolderPaths =   (f) -> path.join folderConfig.folder, f
+  onlyDirectories = (f) -> fs.statSync(f).isDirectory()
+  removeDirectoryIfExists = (dir) ->
       if fs.existsSync dir
         try
           fs.rmdirSync dir
           logger.success "Deleted empty directory [[ #{dir} ]]"
         catch err
           unless err.code is "ENOTEMPTY"
-            logger.error "Unable to delete directory, [[ #{dirPath} ]]"
+            logger.error "Unable to delete directory, [[ #{dir} ]]"
             logger.error err
 
+  for folderConfig in folders
+    directories = wrench.readdirSyncRecursive(folderConfig.folder)
+      .map(toFolderPaths)
+      .filter(onlyDirectories)
+      .push(folderConfig.folder)
+
+    _.sortBy(directories, 'length').reverse().forEach removeDirectoryIfExists
+
 __addFileToText = (fileName, text) ->
-  fileText = fs.readFileSync(fileName)
+  fileText = fs.readFileSync fileName
   if __getEncoding(fileText) isnt 'binary'
     logger.debug "Adding [[ #{fileName} ]] to output"
     if path.extname(fileName) is ".js"
@@ -131,8 +133,8 @@ __addFileToText = (fileName, text) ->
     ""
 
 __getEncoding = (buffer) ->
-  contentStartBinary = buffer.toString('binary',0,24)
-  contentStartUTF8 = buffer.toString('utf8',0,24)
+  contentStartBinary = buffer.toString 'binary', 0, 24
+  contentStartUTF8 = buffer.toString 'utf8', 0, 24
   encoding = 'utf8'
 
   for i in [0...contentStartUTF8.length]
