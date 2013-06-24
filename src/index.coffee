@@ -83,6 +83,10 @@ __mergeDirectory = (combine) ->
   logger.success "Wrote combined file [[ #{combine.output} ]]"
   fs.writeFileSync combine.output, outputFileText
 
+  # rejoin order files for possible removal
+  if combine.order?
+    folderFiles = folderFiles.concat combine.order
+
   folderFiles
 
 __removeAllCombined = (files, removeCombined) ->
@@ -100,25 +104,22 @@ __removeAllCombined = (files, removeCombined) ->
 
 __cleanUpDirectories = (folders) ->
 
-  toFolderPaths =   (f) -> path.join folderConfig.folder, f
-  onlyDirectories = (f) -> fs.statSync(f).isDirectory()
-  removeDirectoryIfExists = (dir) ->
+  for folderConfig in folders
+    directories = wrench.readdirSyncRecursive(folderConfig.folder)
+      .map (f) -> path.join folderConfig.folder, f
+      .filter (f) -> fs.statSync(f).isDirectory()
+
+    directories.push folderConfig.folder
+
+    _.sortBy(directories, 'length').reverse().forEach (dir) ->
       if fs.existsSync dir
         try
           fs.rmdirSync dir
-          logger.success "Deleted empty directory [[ #{dir} ]]"
+          logger.success "Deleted empty combined directory [[ #{dir} ]]"
         catch err
           unless err.code is "ENOTEMPTY"
-            logger.error "Unable to delete directory, [[ #{dir} ]]"
+            logger.error "Unable to delete combined directory, [[ #{dir} ]]"
             logger.error err
-
-  for folderConfig in folders
-    directories = wrench.readdirSyncRecursive(folderConfig.folder)
-      .map(toFolderPaths)
-      .filter(onlyDirectories)
-      .push(folderConfig.folder)
-
-    _.sortBy(directories, 'length').reverse().forEach removeDirectoryIfExists
 
 __addFileToText = (fileName, text) ->
   fileText = fs.readFileSync fileName
