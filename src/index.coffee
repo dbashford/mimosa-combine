@@ -106,8 +106,8 @@ __cleanUpDirectories = (folders) ->
 
   for folderConfig in folders
     directories = wrench.readdirSyncRecursive(folderConfig.folder)
-      .map (f) -> path.join folderConfig.folder, f
-      .filter (f) -> fs.statSync(f).isDirectory()
+      .map((f)-> path.join folderConfig.folder, f)
+      .filter((f) -> fs.statSync(f).isDirectory())
 
     directories.push folderConfig.folder
 
