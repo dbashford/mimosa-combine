@@ -124,11 +124,12 @@ __cleanUpDirectories = (folders) ->
 __addFileToText = (fileName, text) ->
   fileText = fs.readFileSync fileName
   if __getEncoding(fileText) isnt 'binary'
+    fileText = fileText.toString('utf8').trim()
     logger.debug "Adding [[ #{fileName} ]] to output"
     if path.extname(fileName) is ".js"
       fileText + ";"
     else
-      fileText + "\n"
+      fileText + "\n\n"
   else
     logger.debug "NOT adding [[ #{fileName} ]] to output"
     ""
