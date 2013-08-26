@@ -5,7 +5,7 @@ mimosa-combine
 
 This is a Mimosa module for merging a folders contents into a single file. This is an external module and does not come by default with Mimosa.
 
-For more information regarding Mimosa, see http://mimosajs.com
+For more information regarding Mimosa, see http://mimosa.io
 
 ## Usage
 
