@@ -22,6 +22,8 @@ _cleanCombined = (mimosaConfig, options, next) ->
   next()
 
 _checkForMerge = (mimosaConfig, options, next) ->
+  return next() unless options.files
+
   for file in options.files
     fileName = file.outputFileName
     if fileName?
