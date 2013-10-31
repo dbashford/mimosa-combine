@@ -129,7 +129,7 @@ __addFileToText = (fileName, text) ->
     fileText = fileText.toString('utf8').trim()
     logger.debug "Adding [[ #{fileName} ]] to output"
     if path.extname(fileName) is ".js"
-      fileText + ";"
+      fileText + ";\n"
     else
       fileText + "\n\n"
   else
