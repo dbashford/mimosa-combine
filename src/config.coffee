@@ -1,7 +1,5 @@
 "use strict"
 
-logger = require 'logmimosa'
-
 exports.defaults = ->
   combine:
     folders: []
@@ -28,21 +26,6 @@ exports.validate = (config, validators) ->
   errors = []
 
   errorStart = "combine.folders"
-  if Array.isArray(config.combine)
-    logger.warn """
-      You are using a deprecated configuration for mimosa-combine, which is, for now, still supported.
-      In 0.11.0 support for combine:[] will be removed. The new config takes the form: #{exports.placeholder()}
-      where combine.folders:[] is the old combine:[].\n
-    """
-
-    combines = config.combine
-    config.combine = {}
-    defaults = exports.defaults()
-    for key of defaults.combine
-      config.combine[key] = defaults.combine[key]
-    config.combine.folders = combines
-    config.combine.removeCombined.enabled = false
-    errorStart = "combine"
 
   if validators.ifExistsIsObject(errors, "combine", config.combine)
     combines = config.combine.folders

@@ -5,11 +5,14 @@ path = require "path"
 
 wrench = require 'wrench'
 _ = require 'lodash'
-logger = require 'logmimosa'
 
 config = require './config'
 
+logger = null
+
 registration = (mimosaConfig, register) ->
+  logger = mimosaConfig.log
+
   register ['preClean'],              'init',       _cleanCombined
   register ['add','update','remove'], 'afterWrite', _checkForMerge
   register ['postBuild'],             'init',       _mergeAll
