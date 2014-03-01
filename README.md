@@ -42,7 +42,7 @@ combine: {
     output:"stylesheets/vendor.css",
     exclude:null,
     order:null
-  }},
+  }],
   removeCombined: {
     enabled:true,
     exclude:[]
