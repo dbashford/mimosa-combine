@@ -11,14 +11,14 @@ exports.placeholder = ->
   """
   \t
 
-    # combine:
-      # folders: []      # Configuration for folder combining.  See
-                         # https://github.com/dbashford/mimosa-combine for details on how to set up
-                         # entries in the folders array
-      # removeCombined:  # configuration for removing combined files
-        # enabled:true   # when set to true, during 'mimosa build' only, mimosa-combine will remove
-                         # the files that were merged into single files
-        # exclude:[]     # mimosa-combine will not remove any of these files.
+    combine:
+      folders: []      # Configuration for folder combining.  See
+                       # https://github.com/dbashford/mimosa-combine for details on how to set up
+                       # entries in the folders array
+      removeCombined:  # configuration for removing combined files
+        enabled:true   # when set to true, during 'mimosa build' only, mimosa-combine will remove
+                       # the files that were merged into single files
+        exclude:[]     # mimosa-combine will not remove any of these files.
 
   """
 
