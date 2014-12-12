@@ -2,6 +2,7 @@
 
 exports.defaults = ->
   combine:
+    transforms:[]
     folders: []
     removeCombined:
       enabled:true
@@ -13,6 +14,8 @@ exports.placeholder = ->
   \t
 
     combine:
+      transforms:[]    # an array of transform functions to use to alter files
+                       # before they are combined
       folders: []      # Configuration for folder combining.  See
                        # https://github.com/dbashford/mimosa-combine for details on how to set up
                        # entries in the folders array
@@ -29,8 +32,13 @@ exports.validate = (config, validators) ->
   errorStart = "combine.folders"
 
   if validators.ifExistsIsObject(errors, "combine", config.combine)
-    combines = config.combine.folders
 
+    if validators.ifExistsIsArray(errors, "combine.transforms", config.combine.transforms)
+      for transform in config.combine.transforms
+        if Object.prototype.toString.call(transform) isnt '[object Function]'
+          errors.push "combine.transforms entries must be of type Function"
+
+    combines = config.combine.folders
     if validators.ifExistsIsArray(errors, errorStart, combines)
       for combine in combines
         if typeof combine is "object" and not Array.isArray(combine)
@@ -49,6 +57,11 @@ exports.validate = (config, validators) ->
 
           validators.ifExistsArrayOfMultiPaths(errors, "#{errorStart}.order", combine.order, combine.folder)
 
+          if validators.ifExistsIsArray(errors, "#{errorStart}.transforms", combine.transforms)
+            for transform in combine.transforms
+              if Object.prototype.toString.call(transform) isnt '[object Function]'
+                errors.push "#{errorStart}.transforms entries must be of type Function"
+
           if combine.exclude and combine.include
             errors.push "Cannot have both combine.folders.include and combine.folders.exclude"
           else
@@ -60,6 +73,10 @@ exports.validate = (config, validators) ->
               validators.ifExistsFileIncludeWithRegexAndString(errors, "#{errorStart}.include", combine, combine.folder)
             else
               errors.push "Installed version of Mimosa does not support combine.folders.include. Need Mimosa version 2.3.22 for this feature. You may want to use older version of mimosa-combine."
+
+          continue if errors.length > 0
+          
+          combine.transforms = (combine.transforms ? []).concat( config.combine.transforms ? [] )
 
         else
           errors.push "#{errorStart} must be an array of objects."

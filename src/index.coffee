@@ -45,7 +45,8 @@ _checkForMerge = (mimosaConfig, options, next) ->
             if combine.includeRegex? and fileName.match(combine.includeRegex)
               doit = true
 
-          __mergeDirectory combine if doit
+          if doit
+            __mergeDirectory combine
 
   next()
 
@@ -61,22 +62,20 @@ _mergeAll = (mimosaConfig, options, next) ->
 
   next()
 
-__mergeDirectory = (combine) ->
-  unless fs.existsSync combine.folder
-    return logger.warn "mimosa-combine: combine folder [[ #{combine.folder} ]] does not exist"
+__transformText = (folderCombineConfig, inputFileName, inputFileText) ->
+  transforms = folderCombineConfig.transforms
+  if transforms and transforms.length
+    outputFileName = folderCombineConfig.output
+    for transform in transforms
+      transformedText = transform( inputFileText, inputFileName, outputFileName)
+      if transformedText is undefined
+        logger.error("mimosa-combine transform returned undefined")
+      else
+        inputFileText = transformedText
 
-  if logger.isDebug()
-    logger.debug "Combining [[ #{combine.folder} ]]"
+  inputFileText
 
-  if fs.existsSync combine.output
-    if logger.isDebug()
-      logger.debug "Removing current combined file [[ #{combine.output} ]]"
-    fs.unlinkSync combine.output
-
-  folderFiles = wrench.readdirSyncRecursive(combine.folder).map (f) -> path.join combine.folder, f
-  folderFiles = folderFiles.filter (f) -> fs.statSync(f).isFile()
-
-  # deal with include/exclude of files from folder
+__processIncludeExclude = (combine, folderFiles) ->
   if combine.isExclude
     # remove files mentioned by name
     folderFiles = _.difference(folderFiles, combine.exclude)
@@ -98,6 +97,27 @@ __mergeDirectory = (combine) ->
 
       folderFiles = includedFiles
 
+  folderFiles
+
+__mergeDirectory = (combine) ->
+  unless fs.existsSync combine.folder
+    return logger.warn "mimosa-combine: combine folder [[ #{combine.folder} ]] does not exist"
+
+  if logger.isDebug()
+    logger.debug "Combining [[ #{combine.folder} ]]"
+
+  if fs.existsSync combine.output
+    if logger.isDebug()
+      logger.debug "Removing current combined file [[ #{combine.output} ]]"
+    fs.unlinkSync combine.output
+
+  # read in all files in folder, remove directories
+  folderFiles = wrench.readdirSyncRecursive(combine.folder).map (f) -> path.join combine.folder, f
+  folderFiles = folderFiles.filter (f) -> fs.statSync(f).isFile()
+
+  # deal with include/exclude of files from folder
+  folderFiles = __processIncludeExclude(combine, folderFiles)
+
   if folderFiles.length is 0
     logger.info "mimosa-combine: there are no files to combine for configuration"
     return []
@@ -105,12 +125,13 @@ __mergeDirectory = (combine) ->
   outputFileText = ""
   removeFiles = []
 
-  addFileText = (f) ->
-    fileText = __getFileText f
+  addFileText = (fileName) ->
+    fileText = __getFileText fileName
     if fileText
-      outputFileText += fileText
+      transformedText = __transformText combine, fileName, fileText
+      outputFileText += transformedText ? ""
     else
-      removeFiles.push f
+      removeFiles.push fileName
 
   if combine.order?
     folderFiles = _.difference(folderFiles, combine.order)
