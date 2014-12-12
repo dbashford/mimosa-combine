@@ -7,6 +7,8 @@ This is a Mimosa module for merging a folders contents into a single file. This 
 
 For more information regarding Mimosa, see http://mimosa.io
 
+NOTE: Version `2.0.0` of mimosa-combine requires mimosa version `2.3.22` or higher.
+
 ## Usage
 
 Add `'combine'` to your list of modules.  That's all!  Mimosa will install the module for you when you start up.
@@ -41,6 +43,7 @@ combine: {
     folder:"stylesheets/vendor",
     output:"stylesheets/vendor.css",
     exclude:null,
+    include:null,
     order:null
   }],
   removeCombined: {
@@ -54,7 +57,8 @@ combine: {
 * `combine.folders`: array of folders to combine
 * `combine.folders.folder`: a string, the path to the folder to combine. Path is relative to the watch config settings.  Path can also be absolute.
 * `combine.folders.output`: a string, the path to the output file result of the combine.  Path is relative to the watch config settings.  Path can also be absolute.
-* `combine.folders.exclude`: an array of strings and/or regexs, the list of files and file patterns to exclude from the combine.Paths should be relative to `folder` and should point at the compiled file. So foo.css, not foo.less. Regexes can also be used at the same time.  ex: `ex: [/\.txt$/, "vendor/jqueryui.js"]`. Can be left off or made null if not needed.
+* `combine.folders.exclude`: an array of strings and/or regexs, the list of files and file patterns to exclude from the combine. Paths should be relative to `folder` and should point at the compiled file. So foo.css, not foo.less. Regexes can also be used at the same time.  ex: `ex: [/\.txt$/, "vendor/jqueryui.js"]`. Can be left off or made `null` if not needed.  Note: `include` and `exclude` are exclusive.  If you have configured both, mimosa will error out during startup with validation errors.
+* `combine.folders.include`: an array of strings and/or regexs, the list of files and file patterns to include in the combine. Paths should be relative to `folder` and should point at the compiled file. So foo.css, not foo.less. Regexes can also be used at the same time.  ex: `ex: [/\.txt$/, "vendor/jqueryui.js"]`. Can be left off or made `null` if not needed.  Note: `include` and `exclude` are exclusive.  If you have configured both, mimosa will error out during startup with validation errors.
 * `combine.folders.order`: an array of strings, the list of files to include in the combined file first. Does not need to be all the files, just the files for which order is important. Paths should be relative to `folder` and should point at the compiled file. So foo.css, not foo.less. Can be left off or made null if not needed.
 * `combine.removeCombined`: configuration for cleaning up during a `mimosa build`
 * `combine.removeCombined.enabled`: Defaults to `true`, whether or not to clean up the files that went into making the combine files.
