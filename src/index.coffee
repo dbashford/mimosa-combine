@@ -76,6 +76,7 @@ __mergeDirectory = (combine) ->
   folderFiles = wrench.readdirSyncRecursive(combine.folder).map (f) -> path.join combine.folder, f
   folderFiles = folderFiles.filter (f) -> fs.statSync(f).isFile()
 
+  # deal with include/exclude of files from folder
   if combine.isExclude
     # remove files mentioned by name
     folderFiles = _.difference(folderFiles, combine.exclude)
@@ -102,17 +103,24 @@ __mergeDirectory = (combine) ->
     return []
 
   outputFileText = ""
+  removeFiles = []
+
+  addFileText = (f) ->
+    fileText = __getFileText f
+    if fileText
+      outputFileText += fileText
+    else
+      removeFiles.push f
 
   if combine.order?
     folderFiles = _.difference(folderFiles, combine.order)
     combine.order.forEach (orderFile) ->
       if fs.existsSync orderFile
-        outputFileText += __addFileToText(orderFile)
+        addFileText orderFile
       else
         logger.warn "mimosa-combine: file listed in combine.order [[ #{orderFile} ]] does not exist"
 
-  folderFiles.forEach (folderFile) ->
-    outputFileText += __addFileToText(folderFile)
+  folderFiles.forEach addFileText
 
   unless fs.existsSync path.dirname(combine.output)
     logger.debug "Directory does not exist for combine file [[ #{combine.output} ]], so making it."
@@ -125,6 +133,10 @@ __mergeDirectory = (combine) ->
   if combine.order?
     folderFiles = folderFiles.concat combine.order
 
+  # nuke any files that could not be read/understood (binary)
+  # as they were not actually included in combine
+  folderFiles = _.difference(folderFiles, removeFiles)
+
   folderFiles
 
 __removeAllCombined = (files, removeCombined) ->
@@ -136,7 +148,7 @@ __removeAllCombined = (files, removeCombined) ->
     if removeCombined?.excludeRegex? and file.match(removeCombined?.excludeRegex)
       doit = false
 
-    if doit
+    if doit and fs.existsSync file
       fs.unlinkSync file
       logger.success "mimosa-combine: removed combined file constituent [[ #{file} ]]"
 
@@ -159,12 +171,16 @@ __cleanUpDirectories = (folders) ->
             logger.error "mimosa-combine: unable to delete combined directory, [[ #{dir} ]]"
             logger.error err
 
-__addFileToText = (fileName, text) ->
+# returns text to add to file
+# or returns false if file is binary
+__getFileText = (fileName, text) ->
   fileText = fs.readFileSync fileName
   if __getEncoding(fileText) isnt 'binary'
     fileText = fileText.toString('utf8').trim()
+
     if logger.isDebug()
       logger.debug "Adding [[ #{fileName} ]] to output"
+
     if path.extname(fileName) is ".js"
       fileText + ";\n"
     else
@@ -172,7 +188,7 @@ __addFileToText = (fileName, text) ->
   else
     if logger.isDebug()
       logger.debug "NOT adding [[ #{fileName} ]] to output"
-    ""
+    false
 
 __getEncoding = (buffer) ->
   contentStartBinary = buffer.toString 'binary', 0, 24
