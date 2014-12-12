@@ -59,7 +59,7 @@ exports.validate = (config, validators) ->
             if validators.ifExistsFileIncludeWithRegexAndString
               validators.ifExistsFileIncludeWithRegexAndString(errors, "#{errorStart}.include", combine, combine.folder)
             else
-              errors.push "Installed version of Mimosa does not support combine.folders.include. Need Mimosa version 2.3.22 for this feature."
+              errors.push "Installed version of Mimosa does not support combine.folders.include. Need Mimosa version 2.3.22 for this feature. You may want to use older version of mimosa-combine."
 
         else
           errors.push "#{errorStart} must be an array of objects."
