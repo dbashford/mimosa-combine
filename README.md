@@ -7,7 +7,7 @@ This is a Mimosa module for merging a folders contents into a single file. This 
 
 For more information regarding Mimosa, see http://mimosa.io
 
-NOTE: Version `2.0.0` of mimosa-combine requires mimosa version `2.3.22` or higher.
+NOTE: Version `2.0.0`+ of mimosa-combine requires Mimosa version `2.3.22` or higher. If you cannot update mimosa to that version, you will want to pin the mimosa-combine version to `1.0.2`.  Update your `modules` list to contain `combine@1.0.2` instead of just `combine`.
 
 ## Usage
 
