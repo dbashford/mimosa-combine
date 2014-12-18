@@ -19,14 +19,17 @@ The `'combine'` module configuration contains an array of `folders` that configu
 
 By default, binary files, like images, are excluded from merging and this cannot be configured.  Other exclusions can be added via the config, as can an order to the files get added.
 
+If inline source maps are in a file that is being combined, they will be removed.  The module has the ability to add its own source maps and it will add them by default during `mimosa watch`.  Source maps are turned off during `mimosa build`.
+
 When `mimosa build` is used, by default mimosa-combine cleans up the files it uses to build the combined file.
 
 When `mimosa clean` or `mimosa watch` with the `--clean` flag is run, the `combine` module will clean up the files it has written.
 
-# Config
+# Default Config
 
 ```javascript
 combine: {
+  sourceMap: true,
   folders: [],
   transforms:[],
   removeCombined: {
@@ -36,7 +39,9 @@ combine: {
 }
 ```
 
-# Example Config
+The default config is empty. This module will not do anything unless folders are configured.
+
+# Example Folder Config
 
 ```javascript
 combine: {
@@ -52,21 +57,12 @@ combine: {
         return transformedText;
       }
     ]
-  }],
-  transforms:[
-    function(inputText,inputName,outputName) {
-      // transform text
-      return transformedText;
-    }
-  ],
-  removeCombined: {
-    enabled:true,
-    exclude:[]
-  }
+  }]
 }
 ```
 
 * `combine`: root for mimosa-config configuration
+* `combine.sourceMap`: whether or not to generate source maps for combined files. This will not take into account any manipulations made by any transform functions, and it will not use existing source maps.  Existing source maps are automatically stripped as they serve no purpose in a combined situation.
 * `combine.folders`: array of folders to combine
 * `combine.folders.folder`: a string, the path to the folder to combine. Path is relative to the watch config settings.  Path can also be absolute.
 * `combine.folders.output`: a string, the path to the output file result of the combine.  Path is relative to the watch config settings.  Path can also be absolute.

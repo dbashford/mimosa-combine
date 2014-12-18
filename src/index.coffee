@@ -5,7 +5,9 @@ path = require "path"
 
 wrench = require 'wrench'
 _ = require 'lodash'
+MagicString = new require('magic-string')
 
+sourceMap = require("convert-source-map")
 config = require './config'
 
 logger = null
@@ -46,14 +48,14 @@ _checkForMerge = (mimosaConfig, options, next) ->
               doit = true
 
           if doit
-            __mergeDirectory combine
+            __mergeDirectory mimosaConfig, combine
 
   next()
 
 _mergeAll = (mimosaConfig, options, next) ->
   combinedFiles = []
   for combine in mimosaConfig.combine.folders
-    files = __mergeDirectory combine
+    files = __mergeDirectory mimosaConfig, combine
     combinedFiles.push files...
 
   if mimosaConfig.isBuild and mimosaConfig.combine.removeCombined.enabled
@@ -63,6 +65,11 @@ _mergeAll = (mimosaConfig, options, next) ->
   next()
 
 __transformText = (folderCombineConfig, inputFileName, inputFileText) ->
+  # remove source maps if they are there
+  # the fact that we are combining means
+  # source maps won't work at all
+  inputFileText = sourceMap.removeComments inputFileText
+
   transforms = folderCombineConfig.transforms
   if transforms and transforms.length
     outputFileName = folderCombineConfig.output
@@ -99,7 +106,7 @@ __processIncludeExclude = (combine, folderFiles) ->
 
   folderFiles
 
-__mergeDirectory = (combine) ->
+__mergeDirectory = (mimosaConfig, combine) ->
   unless fs.existsSync combine.folder
     return logger.warn "mimosa-combine: combine folder [[ #{combine.folder} ]] does not exist"
 
@@ -122,16 +129,22 @@ __mergeDirectory = (combine) ->
     logger.info "mimosa-combine: there are no files to combine for configuration"
     return []
 
-  outputFileText = ""
   removeFiles = []
+  bundle = new MagicString.Bundle();
 
   addFileText = (fileName) ->
     fileText = __getFileText fileName
     if fileText
       transformedText = __transformText combine, fileName, fileText
-      outputFileText += transformedText ? ""
+      appendText = "\n\n"
+      if path.extname(fileName) is ".js"
+        appendText = ";\n"
+      bundle.addSource
+        filename: fileName,
+        content: new MagicString(transformedText ? "").append(appendText)
     else
       removeFiles.push fileName
+
 
   if combine.order?
     folderFiles = _.difference(folderFiles, combine.order)
@@ -148,7 +161,19 @@ __mergeDirectory = (combine) ->
     wrench.mkdirSyncRecursive path.dirname(combine.output), 0o0777
 
   logger.success "mimosa-combine: wrote combined file [[ #{combine.output} ]]"
-  fs.writeFileSync combine.output, outputFileText
+
+  bundleOutput = bundle.toString()
+  if mimosaConfig.combine.sourceMap and not mimosaConfig.isBuild
+    map = bundle.generateMap
+      file: combine.output
+      includeContent: true
+      hires: true
+
+    converter = sourceMap.fromObject(map)
+    comment = converter.toComment()
+    bundleOutput += "\n/*#" + comment.slice(3) + "*/"
+
+  fs.writeFileSync combine.output, bundleOutput
 
   # rejoin order files for possible removal
   if combine.order?
@@ -197,15 +222,9 @@ __cleanUpDirectories = (folders) ->
 __getFileText = (fileName, text) ->
   fileText = fs.readFileSync fileName
   if __getEncoding(fileText) isnt 'binary'
-    fileText = fileText.toString('utf8').trim()
-
     if logger.isDebug()
       logger.debug "Adding [[ #{fileName} ]] to output"
-
-    if path.extname(fileName) is ".js"
-      fileText + ";\n"
-    else
-      fileText + "\n\n"
+    fileText.toString('utf8').trim()
   else
     if logger.isDebug()
       logger.debug "NOT adding [[ #{fileName} ]] to output"

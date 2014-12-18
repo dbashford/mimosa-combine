@@ -1,6 +1,6 @@
 {
   "name": "mimosa-combine",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "homepage": "https://github.com/dbashford/mimosa-combine",
   "author": "David Bashford",
   "description": "A Mimosa folder combining module",
@@ -22,7 +22,9 @@
   ],
   "dependencies": {
     "wrench": "1.5.8",
-    "lodash": "2.4.1"
+    "lodash": "2.4.1",
+    "magic-string":"0.2.4",
+    "convert-source-map":"0.4.1"
   },
   "license": "MIT",
   "engines": {

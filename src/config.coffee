@@ -2,6 +2,7 @@
 
 exports.defaults = ->
   combine:
+    sourceMap: true
     transforms:[]
     folders: []
     removeCombined:
@@ -14,6 +15,8 @@ exports.placeholder = ->
   \t
 
     combine:
+      sourceMap: true  # whether or not to generate a source map during developmen
+                       # (mimosa watch, not build)
       transforms:[]    # an array of transform functions to use to alter files
                        # before they are combined
       folders: []      # Configuration for folder combining.  See
@@ -32,6 +35,8 @@ exports.validate = (config, validators) ->
   errorStart = "combine.folders"
 
   if validators.ifExistsIsObject(errors, "combine", config.combine)
+
+    validators.ifExistsIsBoolean(errors, "combine.sourceMap", config.combine.sourceMap)
 
     if validators.ifExistsIsArray(errors, "combine.transforms", config.combine.transforms)
       for transform in config.combine.transforms
@@ -75,7 +80,7 @@ exports.validate = (config, validators) ->
               errors.push "Installed version of Mimosa does not support combine.folders.include. Need Mimosa version 2.3.22 for this feature. You may want to use older version of mimosa-combine."
 
           continue if errors.length > 0
-          
+
           combine.transforms = (combine.transforms ? []).concat( config.combine.transforms ? [] )
 
         else
